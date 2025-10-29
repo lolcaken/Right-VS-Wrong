@@ -1,0 +1,1119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Right vs Wrong — Kids Learning Game</title>
+<style>
+  :root{
+    --accent: #ffb02e;
+    --accent-dark: #ff9b00;
+    --bg: #f7fbff;
+    --green: #1fb16a;
+    --red: #e74c3c;
+    --muted: #6b7280;
+    --card: #fff;
+    --shadow: 0 10px 25px rgba(15,23,42,0.08);
+    --radius: 14px;
+    --font-main: "Comic Sans MS", "Poppins", sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; font-family:var(--font-main); background:linear-gradient(180deg,var(--bg),#fff);
+    color:#0f172a; -webkit-font-smoothing:antialiased;
+  }
+
+  /* header */
+  header{
+    background:linear-gradient(90deg,var(--accent),var(--accent-dark));
+    color:white; padding:14px 16px; display:flex; align-items:center; justify-content:center;
+    position:relative; box-shadow:var(--shadow);
+  }
+  header h1{ margin:0; font-size:18px; letter-spacing:0.3px; }
+  #settingsIcon{ position:absolute; right:12px; top:8px; width:40px; height:40px; border-radius:999px;
+    display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,0.12); cursor:pointer; }
+  #settingsIcon:focus{outline:3px solid rgba(255,255,255,0.18)}
+
+  /* layout */
+  main.app{ max-width:1100px; margin:18px auto; padding:12px; display:grid; grid-template-columns:1fr 420px; gap:20px; transition:opacity .25s ease; }
+  @media(max-width:900px){ main.app{ grid-template-columns:1fr; padding:10px } }
+
+  /* video card */
+  .video-card{ background:var(--card); border-radius:var(--radius); overflow:hidden; box-shadow:var(--shadow); display:flex; flex-direction:column; }
+  .video-wrap{ position:relative; padding-top:56.25%; } /* 16:9 */
+  .video-wrap iframe{ position:absolute; inset:0; width:100%; height:100%; border:0; }
+
+  /* question card */
+  .card{ background:linear-gradient(180deg, #fff, #fffef9); border-radius:var(--radius); padding:14px; box-shadow:var(--shadow); border:4px solid rgba(255,224,178,0.6); }
+  .progress{ color:var(--muted); font-size:13px; margin-bottom:8px; display:flex; align-items:center; justify-content:space-between; gap:8px; }
+  .level{ flex:1; height:10px; background:#eef2f7; border-radius:999px; overflow:hidden; margin-left:8px; margin-right:8px; }
+  .level-fill{ height:100%; width:0%; background:linear-gradient(90deg,var(--accent),var(--accent-dark)); transition:width .35s ease-out; }
+
+  h2.question{ font-size:18px; margin:6px 0 12px 0; text-align:center; color:#0c1720; }
+
+  .options{ display:flex; flex-direction:column; gap:10px; }
+  .opt{ display:flex; gap:12px; align-items:center; padding:10px 12px; background:var(--card); border-radius:10px; cursor:pointer; border:2px solid #fff6e6;
+        box-shadow:0 8px 18px rgba(15,23,42,0.04); transition:transform .12s ease, box-shadow .12s ease; font-size:15px; }
+  .opt:hover{ transform:translateY(-3px) }
+  .opt .label{ font-weight:700; width:34px; height:34px; display:inline-flex; align-items:center; justify-content:center; border-radius:999px; background:#fff6e6; }
+  .opt.correct{ background:linear-gradient(90deg, rgba(31,177,106,0.08), rgba(31,177,106,0.02)); border-color:rgba(31,177,106,0.15) }
+  .opt.wrong{ background:linear-gradient(90deg, rgba(231,76,60,0.06), rgba(231,76,60,0.02)); border-color:rgba(231,76,60,0.12) }
+  button.small{ padding:8px 10px; border-radius:10px; font-weight:700; cursor:pointer; border:none; }
+
+  /* controls row */
+  .controls{ display:flex; gap:10px; align-items:center; justify-content:space-between; margin-top:10px; flex-wrap:wrap; }
+  .left-controls{ display:flex; gap:8px; align-items:center; }
+  .right-controls{ display:flex; gap:8px; align-items:center; }
+
+  /* badges, stickers */
+  #stickers{ background:#fff9e9; border:3px dashed var(--accent); padding:8px; border-radius:12px; font-size:14px; }
+  .floating{ position:fixed; pointer-events:none; z-index:2000; font-size:22px; animation:floatUp 1.6s ease-out forwards; }
+  @keyframes floatUp{ 0%{ transform:translateY(0) scale(.9); opacity:1 } 100%{ transform:translateY(-120px) scale(1.2); opacity:0 } }
+
+  /* hint button */
+  .hint{ background:#0b74ff; color:#fff }
+  .mute{ background:#e2e8f0; color:#0b1320 }
+
+  /* settings modal / panel */
+  .overlay{ position:fixed; inset:0; background:rgba(0,0,0,0.35); display:flex; align-items:center; justify-content:center; z-index:3000; }
+  .modal{ width:940px; max-width:95%; max-height:90vh; overflow:auto; background:white; padding:14px; border-radius:14px; box-shadow:0 20px 60px rgba(2,6,23,0.4); }
+  .modal h3{ margin-top:0 }
+  .row{ display:flex; gap:8px; align-items:center; margin-bottom:8px; flex-wrap:wrap; }
+  .field{ flex:1; min-width:180px; }
+  label.small{ font-size:12px; color:var(--muted); display:block; margin-bottom:4px }
+  input[type="text"], textarea, select{
+    width:100%; padding:8px; border-radius:8px; border:1px solid #ddd; font-size:14px;
+  }
+  textarea{ min-height:54px; resize:vertical; }
+
+  .qcard{ border:1px solid #f0e3c9; padding:8px; border-radius:8px; margin-bottom:8px; background:#fffef8; display:flex; gap:10px; align-items:flex-start; }
+  .q-actions{ display:flex; gap:6px; flex-direction:column; }
+
+  /* search bar */
+  .search{ display:flex; gap:8px; align-items:center; margin-bottom:8px; }
+
+  /* footer */
+  footer{ text-align:center; color:var(--muted); margin:20px 0 40px; font-size:14px; }
+
+  /* confetti canvas */
+  #confettiCanvas{ position:fixed; left:0; top:0; width:100%; height:100%; pointer-events:none; z-index:2500 }
+
+  /* transitions */
+  .fade{ transition: opacity .25s ease; }
+  .hidden{ display:none !important; opacity:0 !important }
+
+  /* buddy animations */
+  .buddy{ font-size:36px; display:inline-block; transition:transform .35s ease, filter .35s; }
+  .jump{ transform:translateY(-10px) scale(1.1); }
+  .shake{ animation:shake .6s; }
+  @keyframes shake{ 10%{ transform:translateX(-4px) } 30%{ transform:translateX(4px) } 50%{ transform:translateX(-3px) } 70%{ transform:translateX(3px) } 90%{ transform:translateX(-1px) } }
+
+  /* results */
+  .results{ display:flex; flex-direction:column; gap:10px; align-items:center; text-align:center; padding:12px }
+  .badge{ background:#fff9e9; border:2px solid var(--accent); padding:8px 12px; border-radius:10px; font-weight:700 }
+
+  /* results modal */
+  .results-modal {
+    background: white;
+    border-radius: 20px;
+    padding: 30px;
+    max-width: 500px;
+    width: 90%;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    position: relative;
+  }
+  
+  .results-modal h2 {
+    color: var(--accent);
+    font-size: 32px;
+    margin-bottom: 20px;
+  }
+  
+  .results-score {
+    font-size: 48px;
+    font-weight: bold;
+    color: var(--green);
+    margin: 20px 0;
+  }
+  
+  .results-message {
+    font-size: 18px;
+    color: var(--muted);
+    margin-bottom: 20px;
+  }
+  
+  .results-stickers {
+    font-size: 24px;
+    margin: 15px 0;
+  }
+  
+  .results-facts {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 15px;
+    margin: 20px 0;
+    text-align: left;
+    max-height: 200px;
+    overflow-y: auto;
+  }
+  
+  .results-facts h4 {
+    margin-top: 0;
+    color: var(--accent);
+  }
+  
+  .results-facts ul {
+    margin: 10px 0;
+    padding-left: 20px;
+  }
+  
+  .results-facts li {
+    margin: 8px 0;
+    color: var(--muted);
+  }
+  
+  .results-buttons {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin-top: 25px;
+  }
+  
+  .results-buttons button {
+    padding: 12px 25px;
+    border-radius: 10px;
+    font-weight: bold;
+    cursor: pointer;
+    border: none;
+    font-size: 16px;
+    transition: transform 0.2s;
+  }
+  
+  .results-buttons button:hover {
+    transform: translateY(-2px);
+  }
+  
+  .btn-primary {
+    background: var(--accent);
+    color: white;
+  }
+  
+  .btn-secondary {
+    background: #e2e8f0;
+    color: var(--muted);
+  }
+
+  /* accessibility large text toggle (class toggled by settings) */
+  .large-text{ font-size:18px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Right vs Wrong — Kids Learning</h1>
+  <div id="settingsIcon" tabindex="0" title="Teacher Settings">⚙️</div>
+</header>
+
+<main class="app" id="app">
+  <!-- LEFT: video + controls -->
+  <div class="video-card card" aria-live="polite">
+    <div class="video-wrap" id="videoWrap" role="region" aria-label="Scenario video">
+      <iframe id="videoFrame" src="" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen title="Scenario video"></iframe>
+    </div>
+
+    <div style="padding:12px;">
+      <div class="progress" aria-hidden="false">
+        <div id="progressText">Question 1 of 6</div>
+        <div class="level">
+          <div id="levelFill" class="level-fill" aria-hidden="true"></div>
+        </div>
+        <div id="timerDisplay" aria-live="polite" style="min-width:50px;text-align:right;font-size:13px;color:var(--muted)"></div>
+      </div>
+
+      <h2 class="question" id="questionText">Question text</h2>
+
+      <div class="options" id="optionsArea" role="list"></div>
+
+      <div class="controls" style="margin-top:12px;">
+        <div class="left-controls">
+          <button class="small hint" id="hintBtn" aria-label="Hint (costs sticker)">💡 Hint</button>
+          <div id="stickerBox" style="margin-left:8px;"><span id="stickerCount">Stickers: 0</span></div>
+        </div>
+        <div class="right-controls">
+          <button class="small mute" id="muteBtn" aria-label="Mute/unmute sounds">🔈</button>
+          <button class="small" id="nameBtn" aria-label="Set child name">👤 Name</button>
+          <button class="small next-btn" id="nextBtn" aria-label="Next question">Next</button>
+        </div>
+      </div>
+
+      <div style="margin-top:10px; display:flex; justify-content:space-between; align-items:center;">
+        <div id="message" style="color:var(--muted); font-weight:600"></div>
+        <div class="buddy" id="buddy" aria-hidden="true">😊</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT: settings summary + factbook -->
+  <div>
+    <div class="card" style="margin-bottom:12px;">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <div style="font-weight:700">Game Controls</div>
+          <div style="color:var(--muted); font-size:13px">View game settings and progress</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:13px; color:var(--muted)">Streak: <span id="streakCount">0</span></div>
+          <div style="font-size:12px; color:var(--muted)">Best: <span id="bestScoreDisplay">0</span></div>
+        </div>
+      </div>
+
+      <hr style="margin:8px 0">
+
+      <div id="factBook" style="margin-top:10px;">
+        <div style="font-weight:700">Fact Book</div>
+        <div id="factList" style="color:var(--muted); font-size:14px; min-height:54px; margin-top:6px;">No facts yet — answer correctly to collect them.</div>
+      </div>
+
+      <div style="margin-top:12px; display:flex; gap:8px; justify-content:space-between;">
+        <button id="openControls" class="small" style="background:var(--accent); color:white">View Game Controls</button>
+        <button id="resetDefault" class="small" style="background:#e74c3c; color:white">🔄 Reset to Default</button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- name modal -->
+<div id="nameModal" class="overlay" aria-hidden="false">
+  <div class="modal" role="dialog" aria-modal="true" aria-label="Enter your name">
+    <h3>Welcome to Right vs Wrong!</h3>
+    <p>Please enter your name to get started:</p>
+    <div style="margin-top:10px;">
+      <input type="text" id="nameInput" placeholder="Your name" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ddd; font-size:16px;" />
+    </div>
+    <div style="margin-top:15px; text-align:right;">
+      <button id="submitName" class="small" style="background:var(--accent); color:white; padding:10px 20px;">Start Playing</button>
+    </div>
+  </div>
+</div>
+
+<!-- game controls modal -->
+<div id="controlsModal" class="overlay hidden" aria-hidden="true">
+  <div class="modal" role="dialog" aria-modal="true" aria-label="Game Controls">
+    <h3>Game Controls</h3>
+    
+    <div style="display:flex; gap:8px; align-items:center; margin-bottom:8px;">
+      <input type="checkbox" id="shuffleQ" checked>
+      <label for="shuffleQ" style="font-size:13px; color:var(--muted)">Shuffle questions each game</label>
+    </div>
+
+    <div style="display:flex; gap:8px; align-items:center; margin-bottom:8px;">
+      <input type="checkbox" id="timerToggle">
+      <label for="timerToggle" style="font-size:13px; color:var(--muted)">Enable 10s timer for bonus</label>
+    </div>
+
+    <div style="margin-top:15px; text-align:right;">
+      <button id="closeControls" class="small" style="background:var(--accent); color:white; padding:10px 20px;">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- results modal -->
+<div id="resultsModal" class="overlay hidden" aria-hidden="true">
+  <div class="results-modal">
+    <h2>🎉 Game Complete! 🎉</h2>
+    <div class="results-score" id="resultsScore">0/0</div>
+    <div class="results-message" id="resultsMessage">Great job!</div>
+    
+    <div class="results-stickers" id="resultsStickers">
+      <div style="font-weight: bold; margin-bottom: 10px;">Your Stickers:</div>
+      <div id="stickerDisplay"></div>
+    </div>
+    
+    <div class="results-facts">
+      <h4>📚 Facts You Learned:</h4>
+      <ul id="factsList"></ul>
+    </div>
+    
+    <div class="results-buttons">
+      <button class="btn-primary" id="playAgainBtn">Play Again</button>
+      <button class="btn-secondary" id="changeNameBtn">Change Name</button>
+    </div>
+  </div>
+</div>
+
+<!-- settings modal (password + management) -->
+<div id="settingsModal" class="overlay hidden" aria-hidden="true">
+  <div class="modal" role="dialog" aria-modal="true" aria-label="Teacher settings">
+    <h3>Teacher Settings — Secure</h3>
+
+    <!-- password box / toggle -->
+    <div id="pwBlock" class="row" style="align-items:center;">
+      <div style="flex:1">
+        <label class="small">Enter teacher code</label>
+        <input type="password" id="pwInput" placeholder="Enter code" aria-label="Teacher password" />
+      </div>
+      <div>
+        <label class="small">Show</label>
+        <button id="pwToggle" class="small">👁️</button>
+      </div>
+      <div>
+        <button id="pwSubmit" class="small" style="background:var(--accent); color:white">Unlock</button>
+      </div>
+    </div>
+
+    <hr>
+
+    <div id="settingsContent" class="hidden">
+      <div style="display:flex; gap:8px; align-items:center; margin-bottom:8px;">
+        <input id="searchQ" placeholder="Search questions..." />
+        <button id="importBtn" class="small">Import JSON</button>
+        <input type="file" id="importFile" accept=".json" style="display:none"/>
+        <button id="exportBtn" class="small">Export JSON</button>
+      </div>
+
+      <div id="questionsList"></div>
+
+      <div style="margin-top:8px; display:flex; gap:8px; justify-content:space-between;">
+        <div>
+          <button id="addQBtn" class="small">➕ Add Question</button>
+          <button id="saveQBtn" class="small" style="background:var(--accent); color:white">Save</button>
+        </div>
+        <div>
+          <button id="closeSettingsBtn" class="small">Close</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- confetti canvas -->
+<canvas id="confettiCanvas"></canvas>
+
+<footer>© Right vs Wrong — built for curious kids</footer>
+
+<!-- sounds -->
+<audio id="s_correct" src="https://actions.google.com/sounds/v1/cartoon/pop.ogg" preload="auto"></audio>
+<audio id="s_wrong" src="https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg" preload="auto"></audio>
+<audio id="s_end" src="https://actions.google.com/sounds/v1/cartoon/slide_whistle_to_drum_hit.ogg" preload="auto"></audio>
+
+<script>
+/* ===========================
+   App Data & Defaults
+   =========================== */
+
+const DEFAULT_DATA = [
+  {
+    "id": "q1",
+    "difficulty": "easy",
+    "video": "https://www.youtube.com/embed/_7R4SflsINU",
+    "question": "What did the kid do wrong after finishing their snack?",
+    "options": [
+      "Threw the wrapper on the ground",
+      "Put the wrapper in the bin",
+      "Kept the wrapper in their pocket"
+    ],
+    "correct": 0,
+    "hint": "Think about the wrapper",
+    "fact": "Putting trash in a bin keeps places clean."
+  },
+  {
+    "id": "q2",
+    "difficulty": "easy",
+    "video": "https://www.youtube.com/embed/dQw4w9WgXcQ",
+    "question": "What mistake did the kid make while washing hands?",
+    "options": [
+      "Left the water running",
+      "Turned off the tap before getting soap",
+      "Used too much soap"
+    ],
+    "correct": 0,
+    "hint": "Water matters",
+    "fact": "Turning taps off saves water."
+  },
+  {
+    "id": "q3",
+    "difficulty": "medium",
+    "video": "https://www.youtube.com/embed/M7lc1UVf-VE",
+    "question": "What did the kid forget to do before leaving their room?",
+    "options": [
+      "Forgot to turn off the lights",
+      "Closed the window",
+      "Put away their toys"
+    ],
+    "correct": 0,
+    "hint": "Think energy",
+    "fact": "Turning off lights saves electricity."
+  },
+  {
+    "id": "q4",
+    "difficulty": "easy",
+    "video": "https://www.youtube.com/embed/ScMzIvxBSi4",
+    "question": "What should you do before crossing the road?",
+    "options": [
+      "Look both ways",
+      "Run quickly",
+      "Close your eyes"
+    ],
+    "correct": 0,
+    "hint": "Be safe",
+    "fact": "Always look both ways before crossing."
+  },
+  {
+    "id": "q5",
+    "difficulty": "medium",
+    "video": "https://www.youtube.com/embed/tgbNymZ7vqY",
+    "question": "What is wrong if you don't wash fruits?",
+    "options": [
+      "They can have dirt or germs",
+      "They taste bad",
+      "They become too soft"
+    ],
+    "correct": 0,
+    "hint": "Think hygiene",
+    "fact": "Washing fruit removes dirt and germs."
+  },
+  {
+    "id": "q6",
+    "difficulty": "medium",
+    "video": "https://www.youtube.com/embed/jNQXAC9IVRw",
+    "question": "What did the kid do wrong while brushing their teeth?",
+    "options": [
+      "Left the tap running",
+      "Used too much toothpaste",
+      "Forgot to rinse their mouth"
+    ],
+    "correct": 0,
+    "hint": "Think water saving",
+    "fact": "Turning off the tap while brushing saves a lot of water."
+  }
+];
+
+let DATA = JSON.parse(localStorage.getItem("rvs_quiz")) || DEFAULT_DATA.slice();
+let SETTINGS = JSON.parse(localStorage.getItem("rvs_settings")) || {
+  accent: getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || "#ffb02e",
+  buddySet: "faces",
+  font: "Comic Sans MS, Poppins, sans-serif",
+  shuffle: true,
+  timerEnabled: false
+};
+
+let state = {
+  order: [], // randomized question order
+  idx: 0,
+  score: 0,
+  stickers: JSON.parse(localStorage.getItem("rvs_stickers")) || [],
+  streak: parseInt(localStorage.getItem("rvs_streak")||0),
+  best: parseInt(localStorage.getItem("rvs_best")||0),
+  timer: null,
+  timerSec: 10,
+  mute: false,
+  childName: localStorage.getItem("rvs_childName") || "",
+  hintPenalty: 1, // subtract 1 point when using hint
+  shuffleQuestions: SETTINGS.shuffle,
+  lastPlayed: JSON.parse(localStorage.getItem("rvs_lastPlayed")) || {}
+};
+
+/* DOM refs */
+const videoFrame = document.getElementById("videoFrame");
+const questionText = document.getElementById("questionText");
+const optionsArea = document.getElementById("optionsArea");
+const progressText = document.getElementById("progressText");
+const levelFill = document.getElementById("levelFill");
+const nextBtn = document.getElementById("nextBtn");
+const hintBtn = document.getElementById("hintBtn");
+const stickerCount = document.getElementById("stickerCount");
+const messageDiv = document.getElementById("message");
+const buddyEl = document.getElementById("buddy");
+const timerDisplay = document.getElementById("timerDisplay");
+const settingsIcon = document.getElementById("settingsIcon");
+const settingsModal = document.getElementById("settingsModal");
+const pwInput = document.getElementById("pwInput");
+const pwToggle = document.getElementById("pwToggle");
+const pwSubmit = document.getElementById("pwSubmit");
+const settingsContent = document.getElementById("settingsContent");
+const questionsList = document.getElementById("questionsList");
+const searchQ = document.getElementById("searchQ");
+const importFile = document.getElementById("importFile");
+const confettiCanvas = document.getElementById("confettiCanvas");
+const s_correct = document.getElementById("s_correct");
+const s_wrong = document.getElementById("s_wrong");
+const s_end = document.getElementById("s_end");
+const resetDefaultBtn = document.getElementById("resetDefault");
+const muteBtn = document.getElementById("muteBtn");
+const shuffleQ = document.getElementById("shuffleQ");
+const timerToggle = document.getElementById("timerToggle");
+const nameBtn = document.getElementById("nameBtn");
+const factList = document.getElementById("factList");
+const streakCount = document.getElementById("streakCount");
+const bestScoreDisplay = document.getElementById("bestScoreDisplay");
+const nameModal = document.getElementById("nameModal");
+const nameInput = document.getElementById("nameInput");
+const submitName = document.getElementById("submitName");
+const controlsModal = document.getElementById("controlsModal");
+const openControls = document.getElementById("openControls");
+const closeControls = document.getElementById("closeControls");
+const resultsModal = document.getElementById("resultsModal");
+const resultsScore = document.getElementById("resultsScore");
+const resultsMessage = document.getElementById("resultsMessage");
+const resultsStickers = document.getElementById("resultsStickers");
+const stickerDisplay = document.getElementById("stickerDisplay");
+const factsList = document.getElementById("factsList");
+const playAgainBtn = document.getElementById("playAgainBtn");
+const changeNameBtn = document.getElementById("changeNameBtn");
+
+/* apply saved theme to UI */
+function applySavedTheme(){
+  document.documentElement.style.setProperty("--accent", SETTINGS.accent||"#ffb02e");
+  document.documentElement.style.setProperty("--accent-dark", shadeColor(SETTINGS.accent||"#ffb02e",-10));
+  document.documentElement.style.setProperty("--font-main", SETTINGS.font||"Comic Sans MS, Poppins, sans-serif");
+  document.body.style.fontFamily = SETTINGS.font;
+}
+applySavedTheme();
+
+/* small util: color shade for accent dark */
+function shadeColor(color, percent) {
+  // color in #rrggbb
+  const num = parseInt(color.slice(1),16);
+  const r = (num >> 16) + percent;
+  const g = (num >> 8 & 0x00FF) + percent;
+  const b = (num & 0x0000FF) + percent;
+  const newR = Math.min(255, Math.max(0, r));
+  const newG = Math.min(255, Math.max(0, g));
+  const newB = Math.min(255, Math.max(0, b));
+  return `#${(newR<<16 | newG<<8 | newB).toString(16).padStart(6,'0')}`;
+}
+
+/* ===========================
+   Security: password hashing via Web Crypto
+   =========================== */
+const CODE_KEY = "rvs_code_hash";
+async function hashCode(str){
+  const enc = new TextEncoder().encode(str);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', enc);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  const hashHex = hashArray.map(b=>b.toString(16).padStart(2,'0')).join('');
+  return hashHex;
+}
+// on first load: if no code stored, store default hashed "67"
+(async()=>{
+  if(!localStorage.getItem(CODE_KEY)){
+    const h = await hashCode("67");
+    localStorage.setItem(CODE_KEY, h);
+  }
+})();
+
+/* password modal handlers */
+pwToggle.addEventListener("click", ()=>{
+  if(pwInput.type === "password") pwInput.type = "text"; else pwInput.type = "password";
+});
+pwSubmit.addEventListener("click", async ()=>{
+  const attempt = pwInput.value.trim();
+  if(!attempt) return alert("Enter code");
+  const hashed = await hashCode(attempt);
+  if(hashed === localStorage.getItem(CODE_KEY)){
+    // unlocked
+    settingsContent.classList.remove("hidden");
+    document.getElementById("pwBlock").classList.add("hidden");
+    buildSettingsList();
+  } else {
+    alert("Wrong code");
+  }
+});
+
+/* open settings from header icon */
+settingsIcon.addEventListener("click", ()=>openSettingsModal());
+function openSettingsModal(){
+  settingsModal.classList.remove("hidden"); settingsModal.style.display = "flex";
+  pwInput.value = "";
+  settingsContent.classList.add("hidden");
+  document.getElementById("pwBlock").classList.remove("hidden");
+  buildSettingsList();
+}
+document.getElementById("closeSettingsBtn").addEventListener("click", ()=>{
+  settingsModal.classList.add("hidden");
+});
+
+/* ===========================
+   SETTINGS: build question editor list
+   =========================== */
+function buildSettingsList(filter=""){
+  questionsList.innerHTML = "";
+  DATA.forEach((q,i)=>{
+    if(filter && !(q.question+q.options.join(" ") + (q.fact||"") ).toLowerCase().includes(filter.toLowerCase())) return;
+    const card = document.createElement("div");
+    card.className = "qcard";
+    card.innerHTML = `
+      <div style="flex:1">
+        <label class="small">Video URL</label>
+        <input type="text" class="sq_vid" value="${escapeHtml(q.video)}"/>
+        <label class="small">Question</label>
+        <input type="text" class="sq_q" value="${escapeHtml(q.question)}"/>
+        <label class="small">Options (comma separated)</label>
+        <textarea class="sq_opts">${escapeHtml(q.options.join(","))}</textarea>
+        <label class="small">Correct Index (0-based)</label>
+        <input type="number" class="sq_correct" value="${q.correct}" min="0" style="width:80px"/>
+        <label class="small">Hint</label>
+        <input type="text" class="sq_hint" value="${escapeHtml(q.hint||"")}" />
+        <label class="small">Fact</label>
+        <input type="text" class="sq_fact" value="${escapeHtml(q.fact||"")}" />
+      </div>
+      <div class="q-actions">
+        <button class="small" data-action="up">⬆️</button>
+        <button class="small" data-action="down">⬇️</button>
+        <button class="small" data-action="remove" style="background:#e74c3c;color:white">Remove</button>
+      </div>
+    `;
+    // attach handlers with closure index
+    const up = card.querySelector('[data-action="up"]');
+    const down = card.querySelector('[data-action="down"]');
+    const remove = card.querySelector('[data-action="remove"]');
+    up.addEventListener("click", ()=>{ if(i>0){ [DATA[i-1],DATA[i]]=[DATA[i],DATA[i-1]]; buildSettingsList(filter); }});
+    down.addEventListener("click", ()=>{ if(i<DATA.length-1){ [DATA[i+1],DATA[i]]=[DATA[i],DATA[i+1]]; buildSettingsList(filter); }});
+    remove.addEventListener("click", ()=>{ if(confirm("Remove this question?")){ DATA.splice(i,1); buildSettingsList(filter);} });
+    questionsList.appendChild(card);
+  });
+}
+searchQ && searchQ.addEventListener("input", ()=> buildSettingsList(searchQ.value));
+
+function addQuestion(){
+  DATA.push({id:"q"+Date.now(), difficulty:"easy", video:"", question:"New question", options:["Option A","Option B","Option C"], correct:0, hint:"", fact:""});
+  buildSettingsList();
+}
+document.getElementById("addQBtn").addEventListener("click", addQuestion);
+
+/* save settings / export / import */
+document.getElementById("saveQBtn").addEventListener("click", ()=> {
+  // read back UI into DATA
+  const cards = questionsList.querySelectorAll('.qcard');
+  const newData=[];
+  cards.forEach(card=>{
+    const vid = card.querySelector('.sq_vid').value.trim();
+    const qtxt = card.querySelector('.sq_q').value.trim();
+    const optsRaw = card.querySelector('.sq_opts').value.trim();
+    const correct = parseInt(card.querySelector('.sq_correct').value)||0;
+    const hint = card.querySelector('.sq_hint').value.trim();
+    const fact = card.querySelector('.sq_fact').value.trim();
+    const opts = optsRaw.split(',').map(s=>s.trim()).filter(Boolean);
+    if(qtxt && opts.length>=2){
+      newData.push({ id:"q"+Date.now()+Math.random(), difficulty:"easy", video:vid, question:qtxt, options:opts, correct: Math.min(correct, opts.length-1), hint, fact });
+    }
+  });
+  if(newData.length>0){
+    DATA = newData;
+    localStorage.setItem("rvs_quiz", JSON.stringify(DATA));
+    alert("Saved. New question set will be used.");
+    settingsModal.classList.add("hidden");
+    resetGameToStart();
+  } else {
+    alert("No valid questions found in editor.");
+  }
+});
+
+document.getElementById("exportBtn").addEventListener("click", ()=>{
+  const blob = new Blob([JSON.stringify(DATA, null, 2)],{type:"application/json"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = "rvs_quiz_export.json"; a.click();
+  URL.revokeObjectURL(url);
+});
+document.getElementById("importBtn").addEventListener("click", ()=> importFile.click());
+importFile.addEventListener("change", (e)=> {
+  const file = e.target.files[0];
+  if(!file) return;
+  const fr = new FileReader();
+  fr.onload = ()=> {
+    try{ const parsed = JSON.parse(fr.result); if(Array.isArray(parsed)){ DATA = parsed; localStorage.setItem("rvs_quiz", JSON.stringify(DATA)); alert("Imported."); buildSettingsList(); resetGameToStart(); } else alert("JSON is not an array.");}
+    catch(err){ alert("Invalid JSON file."); }
+  };
+  fr.readAsText(file);
+});
+
+document.getElementById("resetDefault").addEventListener("click", ()=>{
+  if(confirm("Reset to default questions? This will clear custom questions.")){
+    DATA = DEFAULT_DATA.slice();
+    localStorage.removeItem("rvs_quiz");
+    resetGameToStart();
+  }
+});
+
+/* ===========================
+   Game helper utilities
+   =========================== */
+function escapeHtml(s){ return s?.replaceAll?.("&","&amp;").replaceAll?.("<","&lt;").replaceAll?.(">","&gt;") ?? s; }
+
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+
+/* ===========================
+   Game initialization & main loop
+   =========================== */
+function buildPool(){
+  let pool = DATA.slice();
+  if(document.getElementById("shuffleQ").checked) pool = shuffle(pool);
+  state.order = pool;
+  state.idx = 0;
+  state.score = 0;
+  state.timerSec = 10;
+  state.stickers = JSON.parse(localStorage.getItem("rvs_stickers")) || [];
+  document.getElementById("stickerCount").textContent = "Stickers: "+state.stickers.length;
+}
+function loadQuestion(){
+  if(state.idx >= state.order.length) { showResults(); return; }
+  const q = state.order[state.idx];
+  // load video and question
+  videoFrame.src = q.video;
+  questionText.textContent = q.question;
+  progressText.textContent = `Question ${state.idx+1} of ${state.order.length}`;
+  // build options (shuffled)
+  optionsArea.innerHTML = "";
+  const shuffled = shuffle(q.options.map((opt, i)=>({opt,i})));
+  shuffled.forEach((o, aidx)=>{
+    const div = document.createElement("div");
+    div.className = "opt";
+    div.setAttribute("role","listitem");
+    div.innerHTML = `<div class="label">${String.fromCharCode(65+aidx)}</div><div style="flex:1">${o.opt}</div>`;
+    div.addEventListener("click", ()=> handleAnswer(div, q, o.i));
+    optionsArea.appendChild(div);
+  });
+  // reset UI
+  nextBtn.classList.remove("show");
+  messageDiv.textContent = "";
+  buddySetIdle();
+  updateLevelBar();
+  // timer
+  clearTimer();
+  if(document.getElementById("timerToggle").checked){
+    startTimer();
+  } else { timerDisplay.textContent = ""; }
+  // save last played
+  localStorage.setItem("rvs_lastPlayed", JSON.stringify({ idx: state.idx, timestamp: Date.now() }));
+}
+
+/* visual level bar */
+function updateLevelBar(){
+  const pct = Math.round((state.idx / Math.max(1, state.order.length)) * 100);
+  levelFill.style.width = pct + "%";
+}
+
+/* answer handling */
+function handleAnswer(div, q, chosenIndex){
+  // disable all options
+  const all = optionsArea.querySelectorAll(".opt");
+  all.forEach(o=>o.style.pointerEvents="none");
+  clearTimer();
+  const correct = q.correct;
+  if(chosenIndex === correct){
+    div.classList.add("correct");
+    if(!state.mute) s_correct.play();
+    // sticker reward: random sticker emoji
+    const newSticker = randomSticker();
+    state.stickers.push(newSticker);
+    showFloatingSticker(newSticker);
+    // collect fact into factBook (only on correct)
+    addFact(q.fact);
+    state.score += 1;
+    // buddy animation positive
+    buddyCelebrate();
+    messageDiv.textContent = "Great job! " + (q.fact || "");
+    state.streak = (state.streak || 0) + 1;
+  } else {
+    div.classList.add("wrong");
+    // reveal correct option visually
+    all.forEach((el, idx) => {
+      const txt = el.textContent.trim();
+      // find which one matches q.options[correct]
+      if(el.textContent.includes(q.options[correct])) el.classList.add("correct");
+    });
+    if(!state.mute) s_wrong.play();
+    messageDiv.textContent = "Oops! " + (q.fact || "");
+    state.streak = 0;
+  }
+  // show next
+  nextBtn.classList.add("show");
+  // save stickers and streak/best
+  localStorage.setItem("rvs_stickers", JSON.stringify(state.stickers));
+  localStorage.setItem("rvs_streak", state.streak);
+  if(state.score > state.best){ state.best = state.score; localStorage.setItem("rvs_best", state.best); }
+  // update counts display
+  document.getElementById("stickerCount").textContent = "Stickers: " + state.stickers.length;
+  streakCount.textContent = state.streak;
+  bestScoreDisplay.textContent = state.best;
+}
+
+/* next button */
+nextBtn.addEventListener("click", ()=>{
+  state.idx++;
+  if(state.idx < state.order.length) {
+    updateLevelBarAnimate();
+    loadQuestion();
+  } else {
+    showResults();
+  }
+});
+
+/* hint button */
+hintBtn.addEventListener("click", ()=>{
+  const q = state.order[state.idx];
+  if(!q) return;
+  // penalty: deduct one point if available (but not below 0)
+  if(state.score > 0){ state.score = Math.max(0, state.score - state.hintPenalty); }
+  messageDiv.textContent = "💡 " + (q.hint || "Think carefully!");
+  // deduct sticker if any exist (choose: cost 1 sticker if present)
+  if(state.stickers.length>0) state.stickers.pop();
+  localStorage.setItem("rvs_stickers", JSON.stringify(state.stickers));
+  document.getElementById("stickerCount").textContent = "Stickers: " + state.stickers.length;
+});
+
+/* show results with confetti and results menu */
+function showResults(){
+  // confetti
+  runConfetti();
+  if(!state.mute) s_end.play();
+  
+  // update best score
+  if(state.score > state.best) { 
+    state.best = state.score; 
+    localStorage.setItem("rvs_best", state.best); 
+    bestScoreDisplay.textContent = state.best;
+  }
+  
+  // populate results modal
+  const percentage = Math.round((state.score / state.order.length) * 100);
+  resultsScore.textContent = `${state.score}/${state.order.length}`;
+  
+  // Set message based on performance
+  let message = "";
+  if(percentage >= 80) {
+    message = "Amazing! You're a learning star! 🌟";
+  } else if(percentage >= 60) {
+    message = "Great job! Keep up the good work! 👏";
+  } else if(percentage >= 40) {
+    message = "Good effort! Practice makes perfect! 💪";
+  } else {
+    message = "Keep trying! You'll get better! 🌈";
+  }
+  resultsMessage.textContent = message;
+  
+  // Display stickers
+  stickerDisplay.textContent = state.stickers.length > 0 ? state.stickers.join(" ") : "No stickers earned yet";
+  
+  // Display facts
+  const facts = JSON.parse(localStorage.getItem("rvs_facts")||"[]");
+  factsList.innerHTML = "";
+  if(facts.length === 0) {
+    factsList.innerHTML = "<li>No facts collected yet</li>";
+  } else {
+    facts.forEach(fact => {
+      const li = document.createElement("li");
+      li.textContent = fact;
+      factsList.appendChild(li);
+    });
+  }
+  
+  // Show results modal
+  resultsModal.classList.remove("hidden");
+  resultsModal.style.display = "flex";
+}
+
+/* reset game to start */
+function resetGameToStart(){
+  buildPool();
+  renderFactBook();
+  loadQuestion();
+}
+
+/* initial build & start */
+document.getElementById("shuffleQ").addEventListener("change", ()=> SETTINGS.shuffle = document.getElementById("shuffleQ").checked );
+document.getElementById("timerToggle").addEventListener("change", ()=> { /* nothing immediate */ });
+document.getElementById("muteBtn").addEventListener("click", ()=> { state.mute = !state.mute; muteBtn.textContent = state.mute ? '🔇' : '🔈'; });
+
+document.getElementById("nameBtn").addEventListener("click", ()=>{
+  const n = prompt("Enter child's name (for results)","");
+  if(n){ state.childName = n; localStorage.setItem("rvs_childName", n); alert("Saved name: "+n); }
+});
+
+/* name modal handlers */
+submitName.addEventListener("click", ()=>{
+  const name = nameInput.value.trim();
+  if(name){
+    state.childName = name;
+    localStorage.setItem("rvs_childName", name);
+    nameModal.classList.add("hidden");
+    loadQuestion();
+  } else {
+    alert("Please enter your name");
+  }
+});
+
+/* game controls modal handlers */
+openControls.addEventListener("click", ()=>{
+  controlsModal.classList.remove("hidden");
+  controlsModal.style.display = "flex";
+});
+
+closeControls.addEventListener("click", ()=>{
+  controlsModal.classList.add("hidden");
+});
+
+/* results modal handlers */
+playAgainBtn.addEventListener("click", ()=>{
+  resultsModal.classList.add("hidden");
+  resetGameToStart();
+});
+
+changeNameBtn.addEventListener("click", ()=>{
+  resultsModal.classList.add("hidden");
+  nameModal.style.display = "flex";
+  nameInput.value = "";
+  nameInput.focus();
+});
+
+/* settings header icon opens modal but triggers pw flow earlier */
+settingsIcon.addEventListener("dblclick", ()=> openSettingsModal()); // doubleclick alternate
+
+/* random sticker emoji generator */
+const STICKERS = ["🎖️","🐝","🌟","🌈","🍀","🦄","⭐","🎀","🏅","🍎","🎲"];
+function randomSticker(){ return STICKERS[Math.floor(Math.random()*STICKERS.length)]; }
+function showFloatingSticker(emoji){
+  const el = document.createElement("div");
+  el.className = "floating";
+  el.style.left = (30 + Math.random()*60) + "vw";
+  el.textContent = emoji;
+  document.body.appendChild(el);
+  setTimeout(()=> el.remove(), 1600);
+}
+
+/* buddy animations */
+function buddyCelebrate(){
+  buddyEl.classList.add("jump");
+  setTimeout(()=> buddyEl.classList.remove("jump"), 600);
+}
+function buddySetIdle(){ buddyEl.classList.remove("jump","shake"); }
+
+/* timer */
+function startTimer(){
+  let sec = 10;
+  timerDisplay.textContent = sec + "s";
+  state.timer = setInterval(()=>{
+    sec--;
+    timerDisplay.textContent = sec + "s";
+    if(sec<=0){
+      clearTimer();
+      // time's up: auto mark wrong and reveal
+      messageDiv.textContent = "Time's up!";
+      // simulate picking nothing: reveal correct
+      const all = optionsArea.querySelectorAll(".opt");
+      all.forEach(el=>{
+        if(el.textContent.includes(state.order[state.idx].options[state.order[state.idx].correct])) el.classList.add("correct");
+        el.style.pointerEvents = "none";
+      });
+      if(!state.mute) s_wrong.play();
+      nextBtn.classList.add("show");
+    }
+  },1000);
+}
+function clearTimer(){ if(state.timer){ clearInterval(state.timer); state.timer=null; } timerDisplay.textContent = ""; }
+
+/* confetti implementation on canvas (simple) */
+function runConfetti(){
+  const canvas = confettiCanvas;
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  const pieces = [];
+  for(let i=0;i<80;i++){
+    pieces.push({
+      x: Math.random()*canvas.width,
+      y: Math.random()*-canvas.height,
+      r: 6+Math.random()*8,
+      color: `hsl(${Math.random()*360},70%,60%)`,
+      vx: -2 + Math.random()*4,
+      vy: 2 + Math.random()*6,
+      rot: Math.random()*360
+    });
+  }
+  let t=0;
+  function frame(){
+    t++;
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    for(const p of pieces){
+      p.x += p.vx; p.y += p.vy; p.rot += 4;
+      ctx.save();
+      ctx.fillStyle = p.color;
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rot * Math.PI/180);
+      ctx.fillRect(-p.r/2, -p.r/2, p.r, p.r);
+      ctx.restore();
+    }
+    if(t<120) requestAnimationFrame(frame);
+    else ctx.clearRect(0,0,canvas.width,canvas.height);
+  }
+  frame();
+}
+
+/* fact book */
+function addFact(f){
+  if(!f) return;
+  const facts = JSON.parse(localStorage.getItem("rvs_facts")||"[]");
+  if(!facts.includes(f)) facts.push(f);
+  localStorage.setItem("rvs_facts", JSON.stringify(facts));
+  renderFactBook();
+}
+function renderFactBook(){
+  const facts = JSON.parse(localStorage.getItem("rvs_facts")||"[]");
+  if(facts.length===0) factList.textContent = "No facts yet — answer correctly to collect them.";
+  else factList.innerHTML = facts.map(f=>`<div style="margin:6px 0;">📘 ${escapeHtml(f)}</div>`).join('');
+}
+
+/* UI: show settings modal from header icon (opens password UI) */
+settingsIcon.addEventListener("click", ()=> {
+  settingsModal.classList.remove("hidden");
+});
+document.getElementById("closeSettingsBtn").addEventListener("click", ()=> settingsModal.classList.add("hidden"));
+
+/* reset game / start */
+document.addEventListener("DOMContentLoaded", ()=>{
+  // Check if name is already saved
+  if(!state.childName) {
+    // Show name modal
+    nameModal.style.display = "flex";
+  } else {
+    // Name already exists, start game
+    buildPool();
+    renderFactBook();
+    loadQuestion();
+  }
+  // load persisted theme
+  document.getElementById("stickerCount").textContent = "Stickers: " + (state.stickers.length||0);
+});
+
+/* helper: reset everything and start new */
+function resetAll(){
+  state.idx = 0; state.score = 0; state.stickers = []; localStorage.removeItem("rvs_stickers"); localStorage.removeItem("rvs_streak");
+}
+
+/* reset to start after game or save */
+function resetGameToStart(){
+  state.idx = 0; state.score = 0;
+  buildPool();
+  loadQuestion();
+}
+
+/* timer/bonus ui animation for level bar */
+function updateLevelBarAnimate(){ levelFill.style.transition = 'width .35s ease-out'; updateLevelBar(); setTimeout(()=> levelFill.style.transition='width .35s ease-out', 400); }
+
+/* small helpers */
+function escapeHtml(s){ if(!s) return ""; return s.replaceAll("<","&lt;").replaceAll(">","&gt;"); }
+
+/* end of script */
+</script>
+</body>
+</html>
