@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Right vs Wrong - Kids Learning Game Presentation</title>
+    <style>
+        :root {
+            --primary: #ffb02e;
+            --primary-dark: #ff9b00;
+            --secondary: #1fb16a;
+            --accent: #e74c3c;
+            --light: #f7fbff;
+            --dark: #0f172a;
+            --muted: #6b7280;
+            --card: #fff;
+            --shadow: 0 10px 25px rgba(15,23,42,0.08);
+            --radius: 14px;
+            --font-main: "Comic Sans MS", "Poppins", sans-serif;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: var(--font-main);
+            background: linear-gradient(180deg, var(--light), #fff);
+            color: var(--dark);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+        
+        .slideshow-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            display: flex;
+            overflow: hidden;
+        }
+        
+        .slides {
+            display: flex;
+            width: 3000vw; /* 30 slides * 100vw */
+            transition: transform 0.5s ease-in-out;
+        }
+        
+        .slide {
+            width: 100vw;
+            height: 100vh;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            position: relative;
+        }
+        
+        .slide-number {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: var(--primary);
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            box-shadow: var(--shadow);
+        }
+        
+        .slide-title {
+            font-size: 3rem;
+            margin-bottom: 30px;
+            color: var(--primary-dark);
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .slide-subtitle {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            color: var(--dark);
+        }
+        
+        .slide-content {
+            font-size: 1.5rem;
+            max-width: 800px;
+            margin-bottom: 30px;
+            color: var(--muted);
+        }
+        
+        .slide-image {
+            max-width: 80%;
+            max-height: 50vh;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            margin: 20px 0;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            max-width: 900px;
+            margin: 20px 0;
+        }
+        
+        .feature-card {
+            background: var(--card);
+            padding: 20px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            border: 2px solid rgba(255,224,178,0.6);
+        }
+        
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .feature-title {
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+            color: var(--primary-dark);
+        }
+        
+        .highlight {
+            background: linear-gradient(120deg, rgba(255,176,46,0.2) 0%, rgba(255,176,46,0) 100%);
+            padding: 10px 20px;
+            border-radius: 10px;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+        
+        .code-block {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 20px;
+            border-radius: var(--radius);
+            text-align: left;
+            font-family: monospace;
+            font-size: 1rem;
+            max-width: 800px;
+            margin: 20px 0;
+            overflow-x: auto;
+            box-shadow: var(--shadow);
+        }
+        
+        .navigation {
+            position: fixed;
+            bottom: 30px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            z-index: 100;
+        }
+        
+        .nav-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 50px;
+            font-family: var(--font-main);
+            font-size: 1.1rem;
+            cursor: pointer;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+        }
+        
+        .nav-btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-3px);
+        }
+        
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 5px;
+            background: var(--primary);
+            width: 0%;
+            transition: width 0.3s ease;
+            z-index: 100;
+        }
+        
+        .demo-area {
+            background: white;
+            border-radius: var(--radius);
+            padding: 20px;
+            box-shadow: var(--shadow);
+            max-width: 500px;
+            margin: 20px 0;
+        }
+        
+        .demo-question {
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+        }
+        
+        .demo-options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .demo-option {
+            padding: 10px 15px;
+            border: 2px solid #fff6e6;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .demo-option:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .demo-option.correct {
+            background: rgba(31,177,106,0.1);
+            border-color: rgba(31,177,106,0.3);
+        }
+        
+        .demo-option.wrong {
+            background: rgba(231,76,60,0.1);
+            border-color: rgba(231,76,60,0.3);
+        }
+        
+        @media (max-width: 768px) {
+            .slide-title {
+                font-size: 2rem;
+            }
+            
+            .slide-subtitle {
+                font-size: 1.5rem;
+            }
+            
+            .slide-content {
+                font-size: 1.2rem;
+            }
+            
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="progress-bar" id="progressBar"></div>
+    
+    <div class="slideshow-container">
+        <div class="slides" id="slides">
+            <!-- Slide 1: Title -->
+            <div class="slide">
+                <div class="slide-number">1</div>
+                <h1 class="slide-title">Right vs Wrong</h1>
+                <h2 class="slide-subtitle">Kids Learning Game</h2>
+                <p class="slide-content">An interactive educational web app that teaches children about making good choices through engaging scenarios.</p>
+                <div style="font-size: 4rem; margin: 20px 0;">🎮📚👦👧</div>
+            </div>
+            
+            <!-- Slide 2: Problem Statement -->
+            <div class="slide">
+                <div class="slide-number">2</div>
+                <h2 class="slide-subtitle">The Challenge</h2>
+                <p class="slide-content">How do we teach children about ethics, safety, and good habits in a way that's engaging and memorable?</p>
+                <div class="highlight">Traditional methods often fail to capture children's attention and don't provide immediate feedback.</div>
+                <img src="https://via.placeholder.com/500x300?text=Kids+Learning" alt="Kids Learning" class="slide-image">
+            </div>
+            
+            <!-- Slide 3: Solution -->
+            <div class="slide">
+                <div class="slide-number">3</div>
+                <h2 class="slide-subtitle">Our Solution</h2>
+                <p class="slide-content">Right vs Wrong transforms ethical learning into an interactive game with:</p>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">📹</div>
+                        <h3 class="feature-title">Video Scenarios</h3>
+                        <p>Real-life situations that children can relate to</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">❓</div>
+                        <h3 class="feature-title">Interactive Questions</h3>
+                        <p>Multiple-choice questions with immediate feedback</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🎁</div>
+                        <h3 class="feature-title">Reward System</h3>
+                        <p>Stickers and achievements to motivate learning</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">📚</div>
+                        <h3 class="feature-title">Fact Collection</h3>
+                        <p>Educational facts collected throughout the game</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Slide 4: Target Audience -->
+            <div class="slide">
+                <div class="slide-number">4</div>
+                <h2 class="slide-subtitle">Who Is It For?</h2>
+                <p class="slide-content">Right vs Wrong is designed for:</p>
+                <div class="highlight">Children ages 5-10</div>
+                <div class="highlight">Parents looking for educational tools</div>
+                <div class="highlight">Teachers in classroom settings</div>
+                <div class="highlight">After-school programs and childcare centers</div>
+                <img src="https://via.placeholder.com/500x300?text=Kids+Using+App" alt="Kids Using App" class="slide-image">
+            </div>
+            
+            <!-- Slide 5: Main Interface -->
+            <div class="slide">
+                <div class="slide-number">5</div>
+                <h2 class="slide-subtitle">Main Interface</h2>
+                <p class="slide-content">Clean, colorful design optimized for young users</p>
+                <div class="demo-area">
+                    <div style="background: linear-gradient(90deg, var(--primary), var(--primary-dark)); color: white; padding: 10px; border-radius: 10px 10px 0 0;">
+                        <h3 style="margin: 0; text-align: center;">Right vs Wrong — Kids Learning</h3>
+                    </div>
+                    <div style="padding: 15px;">
+                        <div class="demo-question">What should you do after finishing your snack?</div>
+                        <div class="demo-options">
+                            <div class="demo-option">Throw the wrapper on the ground</div>
+                            <div class="demo-option correct">Put the wrapper in the bin</div>
+                            <div class="demo-option">Keep the wrapper in your pocket</div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-top: 15px;">
+                            <button class="nav-btn" style="padding: 8px 15px; font-size: 0.9rem;">💡 Hint</button>
+                            <button class="nav-btn" style="padding: 8px 15px; font-size: 0.9rem;">Next</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Slide 6: Video Integration -->
+            <div class="slide">
+                <div class="slide-number">6</div>
+                <h2 class="slide-subtitle">Video Integration</h2>
+                <p class="slide-content">Each scenario begins with a short video that sets up the situation</p>
+                <div class="highlight">YouTube integration for diverse content</div>
+                <div class="highlight">Age-appropriate scenarios</div>
+                <div class="highlight">Real-world situations children encounter</div>
+                <img src="https://via.placeholder.com/500x300?text=Video+Scenario" alt="Video Scenario" class="slide-image">
+            </div>
+            
+            <!-- Slide 7: Question System -->
+            <div class="slide">
+                <div class="slide-number">7</div>
+                <h2 class="slide-subtitle">Question System</h2>
+                <p class="slide-content">Multiple-choice questions with visual feedback</p>
+                <div class="demo-area">
+                    <div class="demo-question">What mistake did the kid make while washing hands?</div>
+                    <div class="demo-options">
+                        <div class="demo-option wrong">Left the water running</div>
+                        <div class="demo-option">Turned off the tap before getting soap</div>
+                        <div class="demo-option correct">Used too much soap</div>
+                    </div>
+                    <div style="margin-top: 15px; padding: 10px; background: rgba(31,177,106,0.1); border-radius: 8px; color: var(--secondary);">
+                        ✅ Great job! Turning off taps saves water.
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Slide 8: Progress Tracking -->
+            <div class="slide">
+                <div class="slide-number">8</div>
+                <h2 class="slide-subtitle">Progress Tracking</h2>
+                <p class="slide-content">Visual progress indicators keep children motivated</p>
+                <div class="demo-area">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <span>Question 3 of 6</span>
+                        <span>0:10</span>
+                    </div>
+                    <div style="height: 10px; background: #eef2f7; border-radius: 5px; overflow: hidden;">
+                        <div style="height: 100%; width: 50%; background: linear-gradient(90deg, var(--primary), var(--primary-dark));"></div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-top: 15px;">
+                        <div>Streak: <strong>2</strong></div>
+                        <div>Best: <strong>5</strong></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Slide 9: Reward System -->
+            <div class="slide">
+                <div class="slide-number">9</div>
+                <h2 class="slide-subtitle">Reward System</h2>
+                <p class="slide-content">Children earn stickers for correct answers to encourage continued learning</p>
+                <div style="font-size: 3rem; margin: 20px 0;">
+                    🎖️ 🐝 🌟 🌈 🍀 🦄 ⭐ 🎀 🏅 🍎 🎲
+                </div>
+                <div class="highlight">Stickers appear with fun animations</div>
+                <div class="highlight">Collection grows with each play session</div>
+                <div class="highlight">Motivates children to keep learning</div>
+            </div>
+            
+            <!-- Slide 10: Fact Book -->
+            <div class="slide">
+                <div class="slide-number">10</div>
+                <h2 class="slide-subtitle">Fact Book</h2>
+                <p class="slide-content">Educational facts are collected throughout the game</p>
+                <div class="demo-area" style="text-align: left;">
+                    <h3 style="margin-bottom: 10px;">Fact Book</h3>
+                    <div style="background: #fff9e9; padding: 10px; border-radius: 8px; margin-bottom: 10px;">
+                        📘 Putting trash in a bin keeps places clean.
+                    </div>
+                    <div style="background: #fff9e9; padding: 10px; border-radius: 8px; margin-bottom: 10px;">
+                        📘 Turning taps off saves water.
+                    </div>
+                    <div style="background: #fff9e9; padding: 10px; border-radius: 8px;">
+                        📘 Turning off lights saves electricity.
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Slide 11: Buddy System -->
+            <div class="slide">
+                <div class="slide-number">11</div>
+                <h2 class="slide-subtitle">Buddy System</h2>
+                <p class="slide-content">An animated character provides emotional feedback</p>
+                <div style="font-size: 4rem; margin: 20px 0; transition: transform 0.3s;" id="buddyDemo">😊</div>
+                <div class="highlight">Celebrates correct answers with animations</div>
+                <div class="highlight">Provides encouragement for wrong answers</div>
+                <div class="highlight">Creates an emotional connection to learning</div>
+                <button class="nav-btn" onclick="animateBuddy()" style="margin-top: 20px;">Animate Buddy</button>
+            </div>
+            
+            <!-- Slide 12: Timer Feature -->
+            <div class="slide">
+                <div class="slide-number">12</div>
+                <h2 class="slide-subtitle">Timer Feature</h2>
+                <p class="slide-content">Optional timer adds excitement and encourages quick thinking</p>
+                <div class="demo-area">
+                    <div style="font-size: 2rem; color: var(--accent); margin: 20px 0;">0:08</div>
+                    <div class="highlight">Bonus points for quick answers</div>
+                    <div class="highlight">Can be disabled for younger children</div>
+                    <div class="highlight">Teaches time management skills</div>
+                </div>
+            </div>
+            
+            <!-- Slide 13: Hint System -->
+            <div class="slide">
+                <div class="slide-number">13</div>
+                <h2 class="slide-subtitle">Hint System</h2>
+                <p class="slide-content">Children can use hints when they're stuck, with a small penalty</p>
+                <div class="demo-area">
+                    <div style="background: rgba(11, 116, 255, 0.1); padding: 10px; border-radius: 8px; margin-bottom: 15px;">
+                        💡 Think about the wrapper
+                    </div>
+                    <div class="highlight">Costs one sticker to use</div>
+                    <div class="highlight">Teaches resource management</div>
+                    <div class="highlight">Prevents frustration</div>
+                </div>
+            </div>
+            
+            <!-- Slide 14: Personalization -->
+            <div class="slide">
+                <div class="slide-number">14</div>
+                <h2 class="slide-subtitle">Personalization</h2>
+                <p class="slide-content">Children can enter their name for a personalized experience</p>
+                <div class="demo-area">
+                    <h3>Welcome to Right vs Wrong!</h3>
+                    <p>Please enter your name to get started:</p>
+                    <input type="text" placeholder="Your name" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ddd; margin: 10px 0;">
+                    <button class="nav-btn" style="width: 100%;">Start Playing</button>
+                </div>
+            </div>
+            
+            <!-- Slide 15: Results & Achievements -->
+            <div class="slide">
+                <div class="slide-number">15</div>
+                <h2 class="slide-subtitle">Results & Achievements</h2>
+                <p class="slide-content">Comprehensive results screen with celebration effects</p>
+                <div class="demo-area">
+                    <h2 style="color: var(--primary); margin-bottom: 15px;">🎉 Game Complete! 🎉</h2>
+                    <div style="font-size: 2.5rem; color: var(--secondary); margin: 15px 0;">4/6</div>
+                    <div style="margin: 15px 0;">Great job! Keep up the good work! 👏</div>
+                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; text-align: left;">
+                        <h4>📚 Facts You Learned:</h4>
+                        <ul style="margin: 10px 0; padding-left: 20px;">
+                            <li>Putting trash in a bin keeps places clean.</li>
+                            <li>Turning taps off saves water.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Slide 16: Teacher Settings -->
+            <div class="slide">
+                <div class="slide-number">16</div>
+                <h2 class="slide-subtitle">Teacher Settings</h2>
+                <p class="slide-content">Password-protected settings for educators and parents</p>
+                <div class="demo-area">
+                    <h3>Teacher Settings — Secure</h3>
+                    <div style="display: flex; gap: 10px; margin: 15px 0;">
+                        <input type="password" placeholder="Enter code" style="flex: 1; padding: 8px; border-radius: 8px; border: 1px solid #ddd;">
+                        <button class="nav-btn" style="padding: 8px 15px;">Unlock</button>
+                    </div>
+                    <div class="highlight">Customize question sets</div>
+                    <div class="highlight">Adjust difficulty levels</div>
+                    <div class="highlight">Monitor progress</div>
+                </div>
+            </div>
+            
+            <!-- Slide 17: Question Management -->
+            <div class="slide">
+                <div class="slide-number">17</div>
+                <h2 class="slide-subtitle">Question Management</h2>
+                <p class="slide-content">Teachers can add, edit, and organize questions</p>
+                <div class="demo-area" style="text-align: left;">
+                    <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                        <input type="text" placeholder="Search questions..." style="flex: 1; padding: 8px; border-radius: 8px; border: 1px solid #ddd;">
+                        <button class="nav-btn" style="padding: 8px 15px;">Import</button>
+                        <button class="nav-btn" style="padding: 8px 15px;">Export</button>
+                    </div>
+                    <div style="border: 1px solid #f0e3c9; padding: 10px; border-radius: 8px; margin-bottom: 10px;">
+                        <div style="display: flex; gap: 10px;">
+                            <div style="flex: 1;">
+                                <div>Video URL</div>
+                                <input type="text" value="https://youtube.com/embed/..." style="width: 100%; padding: 5px; border-radius: 5px; border: 1px solid #ddd; margin-bottom: 5px;">
+                                <div>Question</div>
+                                <input type="text" value="What should you do after snack?" style="width: 100%; padding: 5px; border-radius: 5px; border: 1px solid #ddd;">
+                            </div>
+                            <div>
+                                <button class="nav-btn" style="padding: 5px; margin-bottom: 5px;">⬆️</button>
+                                <button class="nav-btn" style="padding: 5px; margin-bottom: 5px;">⬇️</button>
+                                <button class="nav-btn" style="padding: 5px; background: var(--accent);">Remove</button>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="nav-btn" style="width: 100%; margin-top: 10px;">➕ Add Question</button>
+                </div>
+            </div>
+            
+            <!-- Slide 18: Game Controls -->
+            <div class="slide">
+                <div class="slide-number">18</div>
+                <h2 class="slide-subtitle">Game Controls</h2>
+                <p class="slide-content">Customizable settings to tailor the experience</p>
+                <div class="demo-area" style="text-align: left;">
+                    <h3>Game Controls</h3>
+                    <div style="display: flex; align-items: center; margin: 10px 0;">
+                        <input type="checkbox" id="shuffle" checked style="margin-right: 10px;">
+                        <label for="shuffle">Shuffle questions each game</label>
+                    </div>
+                    <div style="display: flex; align-items: center; margin: 10px 0;">
+                        <input type="checkbox" id="timer" style="margin-right: 10px;">
+                        <label for="timer">Enable 10s timer for bonus</label>
+                    </div>
+                    <div style="display: flex; align-items: center; margin: 10px 0;">
+                        <input type="checkbox" id="sounds" checked style="margin-right: 10px;">
+                        <label for="sounds">Enable sounds</label>
+                    </div>
+                    <button class="nav-btn" style="width: 100%; margin-top: 15px;">Save Settings</button>
+                </div>
+            </div>
+            
+            <!-- Slide 19: Technical Architecture -->
+            <div class="slide">
+                <div class="slide-number">19</div>
+                <h2 class="slide-subtitle">Technical Architecture</h2>
+                <p class="slide-content">Built with modern web technologies</p>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">⚡</div>
+                        <h3 class="feature-title">Pure HTML/CSS/JS</h3>
+                        <p>No external dependencies</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">💾</div>
+                        <h3 class="feature-title">Local Storage</h3>
+                        <p>Data persistence without servers</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">📱</div>
+                        <h3 class="feature-title">Responsive Design</h3>
+                        <p>Works on all devices</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🎨</div>
+                        <h3 class="feature-title">CSS Variables</h3>
+                        <p>Easy theming and customization</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Slide 20: Data Structure -->
+            <div class="slide">
+                <div class="slide-number">20</div>
+                <h2 class="slide-subtitle">Data Structure</h2>
+                <p class="slide-content">Efficient organization of questions and user data</p>
+                <div class="code-block">
+// Question data structure
+{
+  "id": "q1",
+  "difficulty": "easy",
+  "video": "https://youtube.com/embed/...",
+  "question": "What did the kid do wrong?",
+  "options": [
+    "Threw wrapper on ground",
+    "Put wrapper in bin",
+    "Kept wrapper in pocket"
+  ],
+  "correct": 0,
+  "hint": "Think about the wrapper",
+  "fact": "Putting trash in bins keeps places clean."
+}
+                </div>
+            </div>
+            
+            <!-- Slide 21: State Management -->
+            <div class="slide">
+                <div class="slide-number">21</div>
+                <h2 class="slide-subtitle">State Management</h2>
+                <p class="slide-content">Comprehensive state tracking for seamless user experience</p>
+                <div class="code-block">
+// Application state
+let state = {
+  order: [],           // Question order
+  idx: 0,              // Current question index
+  score: 0,            // Current score
+  stickers: [],        // Collected stickers
+  streak: 0,           // Correct answer streak
+  best: 0,             // Best score
+  timer: null,         // Timer reference
+  timerSec: 10,        // Timer seconds
+  mute: false,         // Sound muted
+  childName: "",       // Player name
+  shuffleQuestions: true
+};
+                </div>
+            </div>
+            
+            <!-- Slide 22: Security Features -->
+            <div class="slide">
+                <div class="slide-number">22</div>
+                <h2 class="slide-subtitle">Security Features</h2>
+                <p class="slide-content">Protecting settings with secure authentication</p>
+                <div class="code-block">
+// Password hashing with Web Crypto API
+async function hashCode(str) {
+  const enc = new TextEncoder().encode(str);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', enc);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+                </div>
+                <div class="highlight">SHA-256 hashing for password protection</div>
+                <div class="highlight">Local storage for data persistence</div>
+                <div class="highlight">No external data transmission</div>
+            </div>
+            
+            <!-- Slide 23: Animation System -->
+            <div class="slide">
+                <div class="slide-number">23</div>
+                <h2 class="slide-subtitle">Animation System</h2>
+                <p class="slide-content">Engaging animations for enhanced user experience</p>
+                <div class="code-block">
+// Confetti animation
+function runConfetti() {
+  const canvas = document.getElementById('confettiCanvas');
+  const ctx = canvas.getContext('2d');
+  // Animation code here...
+}
+
+// Floating stickers
+function showFloatingSticker(emoji) {
+  const el = document.createElement("div");
+  el.className = "floating";
+  el.textContent = emoji;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 1600);
+}
+                </div>
+                <div class="highlight">CSS transitions for smooth interactions</div>
+                <div class="highlight">Canvas-based confetti effects</div>
+                <div class="highlight">Floating sticker animations</div>
+            </div>
+            
+            <!-- Slide 24: Accessibility -->
+            <div class="slide">
+                <div class="slide-number">24</div>
+                <h2 class="slide-subtitle">Accessibility Features</h2>
+                <p class="slide-content">Designed to be inclusive for all children</p>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">🎨</div>
+                        <h3 class="feature-title">High Contrast</h3>
+                        <p>Clear visual hierarchy</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🔊</div>
+                        <h3 class="feature-title">Sound Feedback</h3>
+                        <p>Audio cues for interactions</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">📏</div>
+                        <h3 class="feature-title">Large Touch Targets</h3>
+                        <p>Easy interaction for small hands</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">♿</div>
+                        <h3 class="feature-title">Keyboard Navigation</h3>
+                        <p>Full keyboard support</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Slide 25: Responsive Design -->
+            <div class="slide">
+                <div class="slide-number">25</div>
+                <h2 class="slide-subtitle">Responsive Design</h2>
+                <p class="slide-content">Optimized for all devices and screen sizes</p>
+                <div class="highlight">Flexible grid layouts</div>
+                <div class="highlight">Adaptive font sizes</div>
+                <div class="highlight">Touch-friendly interface</div>
+                <div class="highlight">Mobile-first approach</div>
+                <img src="https://via.placeholder.com/500x300?text=Mobile+Tablet+Desktop" alt="Responsive Design" class="slide-image">
+            </div>
+            
+            <!-- Slide 26: Performance -->
+            <div class="slide">
+                <div class="slide-number">26</div>
+                <h2 class="slide-subtitle">Performance Optimizations</h2>
+                <p class="slide-content">Fast loading and smooth interactions</p>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">🚀</div>
+                        <h3 class="feature-title">Efficient Rendering</h3>
+                        <p>Minimal DOM manipulation</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">💾</div>
+                        <h3 class="feature-title">Local Storage</h3>
+                        <p>Fast data access</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🖼️</div>
+                        <h3 class="feature-title">Lazy Loading</h3>
+                        <p>Resources loaded as needed</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">⚡</div>
+                        <h3 class="feature-title">Optimized Assets</h3>
+                        <p>Minimal external dependencies</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Slide 27: Educational Value -->
+            <div class="slide">
+                <div class="slide-number">27</div>
+                <h2 class="slide-subtitle">Educational Value</h2>
+                <p class="slide-content">More than just a game - a learning tool</p>
+                <div class="highlight">Teaches critical thinking skills</div>
+                <div class="highlight">Reinforces positive behaviors</div>
+                <div class="highlight">Builds decision-making confidence</div>
+                <div class="highlight">Encourages reflection on actions</div>
+                <div class="highlight">Supports social-emotional learning</div>
+            </div>
+            
+            <!-- Slide 28: Use Cases -->
+            <div class="slide">
+                <div class="slide-number">28</div>
+                <h2 class="slide-subtitle">Use Cases</h2>
+                <p class="slide-content">Versatile applications in various settings</p>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">🏫</div>
+                        <h3 class="feature-title">Classrooms</h3>
+                        <p>Whole-group or individual learning</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🏠</div>
+                        <h3 class="feature-title">Homes</h3>
+                        <p>Parent-child interactive learning</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">👨‍⚕️</div>
+                        <h3 class="feature-title">Therapy</h3>
+                        <p>Social skills development</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">📱</div>
+                        <h3 class="feature-title">Remote Learning</h3>
+                        <p>Accessible from anywhere</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Slide 29: Future Enhancements -->
+            <div class="slide">
+                <div class="slide-number">29</div>
+                <h2 class="slide-subtitle">Future Enhancements</h2>
+                <p class="slide-content">Planned features for continued improvement</p>
+                <div class="highlight">Multiplayer collaboration mode</div>
+                <div class="highlight">Expanded question categories</div>
+                <div class="highlight">Progress reporting for parents/teachers</div>
+                <div class="highlight">Custom avatar creation</div>
+                <div class="highlight">Voice narration for younger children</div>
+                <div class="highlight">Additional language support</div>
+            </div>
+            
+            <!-- Slide 30: Conclusion -->
+            <div class="slide">
+                <div class="slide-number">30</div>
+                <h1 class="slide-title">Thank You!</h1>
+                <h2 class="slide-subtitle">Right vs Wrong - Kids Learning Game</h2>
+                <p class="slide-content">Transforming ethical education through engaging interactive experiences</p>
+                <div style="font-size: 4rem; margin: 30px 0;">🎮✨👏</div>
+                <div class="highlight">Questions?</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="navigation">
+        <button class="nav-btn" id="prevBtn">Previous</button>
+        <button class="nav-btn" id="nextBtn">Next</button>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const totalSlides = 30;
+        const slides = document.getElementById('slides');
+        const progressBar = document.getElementById('progressBar');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        
+        function updateSlides() {
+            slides.style.transform = `translateX(-${currentSlide * 100}vw)`;
+            progressBar.style.width = `${(currentSlide / (totalSlides - 1)) * 100}%`;
+            
+            // Update button states
+            prevBtn.disabled = currentSlide === 0;
+            nextBtn.disabled = currentSlide === totalSlides - 1;
+        }
+        
+        function nextSlide() {
+            if (currentSlide < totalSlides - 1) {
+                currentSlide++;
+                updateSlides();
+            }
+        }
+        
+        function prevSlide() {
+            if (currentSlide > 0) {
+                currentSlide--;
+                updateSlides();
+            }
+        }
+        
+        // Button event listeners
+        nextBtn.addEventListener('click', nextSlide);
+        prevBtn.addEventListener('click', prevSlide);
+        
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') nextSlide();
+            if (e.key === 'ArrowLeft') prevSlide();
+        });
+        
+        // Initialize
+        updateSlides();
+        
+        // Buddy animation for slide 11
+        function animateBuddy() {
+            const buddy = document.getElementById('buddyDemo');
+            buddy.style.transform = 'translateY(-10px) scale(1.1)';
+            setTimeout(() => {
+                buddy.style.transform = 'translateY(0) scale(1)';
+            }, 600);
+        }
+    </script>
+</body>
+</html>
